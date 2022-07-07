@@ -161,6 +161,7 @@ class ProductsController extends Controller
                                 "nombre"           => $filas->nombre,
                                 "valor_formateado" => number_format($filas->precio,0,'','.'),
                                 "precio"           => $filas->precio,
+                                "stock"            => $filas->stock,
                                 "anulado"          => 'NO'
                                );
         }

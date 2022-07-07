@@ -28,11 +28,15 @@ Route::get('products', function () {
     return view('home.index')->with("vista",$vista);
 });
 
+Route::get('salelist', function () {
+    $vista="salelist";
+    return view('home.index')->with("vista",$vista);
+});
+
 Route::get('sales/mensaje', 'App\Http\Controllers\SalesController@mensaje');
 Route::get('sales/', 'App\Http\Controllers\SalesController@index');
 Route::match(['get', 'post'], 'sales/store','App\Http\Controllers\SalesController@store');
-Route::get('sales/show/{id}','App\Http\Controllers\SalesController@show');
-Route::match(['get', 'post'],'sales/list','App\Http\Controllers\SalesController@listOrders');
+Route::match(['get', 'post'],'sales/pdf/{id}','App\Http\Controllers\SalesController@pdf');
 
 Route::match(['get', 'post'], 'categories/store','App\Http\Controllers\CategoriesController@store');
 Route::match(['get', 'post'], 'categories/update','App\Http\Controllers\CategoriesController@update');

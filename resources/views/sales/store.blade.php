@@ -9,7 +9,7 @@
           timer: 1500
     });
 
-    url="{{ url('orders/show/').'/'.$order_id }}";
+    url="{{ url('salelist')}}";
     $(location).attr('href',url); 
 
 

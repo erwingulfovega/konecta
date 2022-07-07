@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use Validator;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Orders;
-use App\Models\OrdersDetails;
+use App\Models\Sales;
+use App\Models\SalesDetails;
 use DB;
 use Carbon\Carbon;
 
@@ -19,7 +19,7 @@ class SalesController extends Controller
         return view('home.index')->with("vista",$vista);  
     }
 
-        public function store(Request $request)
+    public function store(Request $request)
     {
         
         $messages = [
@@ -47,22 +47,22 @@ class SalesController extends Controller
         
        try{
                         
-            $orders = new Orders;
+            $sales = new Sales;
+            $fecha = date("Y-m-d H:m:i");
+            $sales->cliente_nombre= $request->input('nombres');
+            $sales->cliente_email = $request->input('email');
+            $sales->cliente_mobile= $request->input('celular');
+            $sales->estado        = 'Activo';
+            $sales->valor         = $request->input('valor_input_orden');
+            $sales->fecha         = $fecha;
            
-            $orders->custome_name  = $request->input('nombres');
-            $orders->custome_email = $request->input('email');
-            $orders->custome_mobile= $request->input('celular');
-            $orders->status        = 'CREATED';
-            $orders->valor         = $request->input('valor_input_orden');
-           
-            if(!$orders->save()){
+            if(!$sales->save()){
                 \DB::rollback();
                
-                return view('orders.store')
+                return view('sales.store')
                         ->with("guardar",false)
-                        ->with("mensaje","Error al guardar la orden");
+                        ->with("mensaje","Error al guardar la factura");
 
-                  
             }
                
             $detalles_item = str_replace("]\"","]",str_replace("\"[","[",str_replace("\\","",$request->input('detalles'))));
@@ -73,43 +73,49 @@ class SalesController extends Controller
 
                       foreach( $detalles_item as $items):
                         if($items->codigo!=''){
-                            $detalles = new OrdersDetails();   
-                            $detalles->order_id    = $orders->id;
-                            $detalles->articulo_id = $items->id;
+                            $detalles = new SalesDetails();   
+                            $detalles->fac_id      = $sales->id;
+                            $detalles->producto_id = $items->id;
                             $detalles->cantidad    = $items->cantidad;
                             $detalles->subtotal    = $items->subtotal;
                             $detalles->valor       = $items->valor;              
 
                             if(!$detalles->save()){
                                 \DB::rollback();
-                                return view('orders.store')
+                                return view('sales.store')
                                         ->with("guardar",false)
-                                        ->with("mensaje","Error al adicionar los artíclos a la orden");
+                                        ->with("mensaje","Error al adicionar los productos a la factura");
                             }
                        }
                     endforeach;
 
                 }else{
                     \DB::rollback();
-                    return view('orders.store')
+                    return view('sales.store')
                                 ->with("guardar",false)
-                                ->with("mensaje","Error al adicionar los artíclos a la orden");
-        }
-                
+                                ->with("mensaje","Error al adicionar los productos a la factura");
             }
-          
+                
+        }
+
         \DB::commit();
 
-        return view("orders.store")->with("guardar",true)
-                                   ->with("mensaje","Orden guardada")
-                                   ->with("order_id",$orders->id);
+        $sql="update productos inner join factura_detalle on productos.id=factura_detalle.producto_id 
+        set productos.stock=productos.stock-factura_detalle.cantidad
+        where factura_detalle.fac_id='".$sales->id."'";
+
+        $productos = DB::Select($sql);
+
+        return view("sales.store")->with("guardar",true)
+                                   ->with("mensaje","Factura guardada")
+                                   ->with("fac_id",$sales->id);
                         
         }catch(ValidationException $e)
         {
             \DB::rollback();
-            return view('orders.store')
+            return view('sales.store')
                     ->with("guardar",false)
-                    ->with("mensaje","Error al adicionar los artíclos a la orden");
+                    ->with("mensaje","Error al adicionar los productos a la factura");
         } catch(\Exception $e)
         {
             \DB::rollback();
@@ -117,178 +123,27 @@ class SalesController extends Controller
         }    
     }
 
-    public function show($id){
-        
-        $orders = Orders::find($id);
-
-        $details = DB::table('orders_details as od')
-                    ->join('articles as a', 'od.articulo_id', '=', 'a.id')
-                    ->where('od.order_id',$orders->id)
-                    ->select('od.*','a.codigo','a.descripcion')
-                    ->get();
-
-        return view('orders.show', compact('orders','details','id'));
-    }
-    
-    function listOrders(){
-
-        $orders = Orders::get();
-        $vista ="lista";
-
-        return view('orders.lista', compact('orders','vista'));
-    }
-
-
-    public function thankey($id){
-
-        $curl = curl_init();
-        date_default_timezone_set('America/Bogota');
-        $login = env('LOGIN');
-        $secretKey  = env('SECRETKEY');
-        $nonce = random_bytes(16);
-        $seed = date('c');
-        $digest = base64_encode(hash('sha256', $nonce . $seed . $secretKey, true));
-        $nonce = base64_encode($nonce);
-        $new_seed = date('c' ,strtotime("+ 1 days"));
-        $url_return=url('orders/getSession/').'/'.$id;
-    
-        $orders = Orders::find($id);
-
-        $datos = '{
-          "locale": "es_CO",
-          "auth": {
-            "login": "'.$login.'",
-            "tranKey": "'.$digest.'",
-            "nonce": "'.$nonce.'",
-            "seed": "'.$seed.'"
-          },
-          "payment": {
-            "reference": "'.$orders->id.'",
-            "description": "'.'Orden: '.$orders->id.'",
-            "amount": {
-              "currency": "COP",
-              "total": "'.$orders->valor.'"
-            },
-            "allowPartial": false
-          },
-          "expiration": "'.$new_seed.'",
-          "returnUrl": "'.$url_return.'",
-          "ipAddress": "127.0.0.1",
-          "userAgent": "PlacetoPay Sandbox"
-          }';
-          //echo "<pre> datos: ".$datos."</pre>";
-        //https://checkout-test.placetopay.com/api/session
-
-        curl_setopt_array($curl, array(
-          CURLOPT_URL => 'https://dev.placetopay.com/redirection/api/session',
-          CURLOPT_RETURNTRANSFER => true,
-          CURLOPT_ENCODING => '',
-          CURLOPT_MAXREDIRS => 10,
-          CURLOPT_TIMEOUT => 0,
-          CURLOPT_FOLLOWLOCATION => true,
-          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-          CURLOPT_CUSTOMREQUEST => 'POST',
-          CURLOPT_POSTFIELDS =>$datos,
-          CURLOPT_HTTPHEADER => array(
-            'Content-Type: application/json'
-          ),
-        ));
-
-        $response = curl_exec($curl);
-
-        curl_close($curl);
-        
-        $json_response = json_decode($response, true);
-        $json_response["requestId"];
-
-        $order= Orders::find($id);
-        $order->requestId = $json_response["requestId"];
-        $order->save();
-
-        return json_decode($response);
-
-    }
-
-    public function getSession($id){
-
-        $curl = curl_init();
-        date_default_timezone_set('America/Bogota');
-        $login = env('LOGIN');
-        $secretKey  = env('SECRETKEY');
-        $nonce = random_bytes(16);
-        $seed = date('c');
-        $digest = base64_encode(hash('sha256', $nonce . $seed . $secretKey, true));
-        $nonce = base64_encode($nonce);
-        $new_seed = date('c' ,strtotime("+ 1 days"));
-        $url_return=url('orders/getSession/').'/'.$id;
-        $orders = Orders::find($id);
-
-        $datos = '{
-          "locale": "es_CO",
-          "auth": {
-            "login": "'.$login.'",
-            "tranKey": "'.$digest.'",
-            "nonce": "'.$nonce.'",
-            "seed": "'.$seed.'"
-          },
-          "payment": {
-            "reference": "'.$orders->id.'",
-            "description": "'.'Orden: '.$orders->id.'",
-            "amount": {
-              "currency": "COP",
-              "total": "'.$orders->valor.'"
-            },
-            "allowPartial": false
-          },
-          "expiration": "'.$new_seed.'",
-          "returnUrl": "'.$url_return.'",
-          "ipAddress": "127.0.0.1",
-          "userAgent": "PlacetoPay Sandbox"
-          }';
-
-        curl_setopt_array($curl, array(
-          CURLOPT_URL => 'https://dev.placetopay.com/redirection/api/session/56302',
-          CURLOPT_RETURNTRANSFER => true,
-          CURLOPT_ENCODING => '',
-          CURLOPT_MAXREDIRS => 10,
-          CURLOPT_TIMEOUT => 0,
-          CURLOPT_FOLLOWLOCATION => true,
-          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-          CURLOPT_CUSTOMREQUEST => 'POST',
-          CURLOPT_POSTFIELDS =>$datos,
-          CURLOPT_HTTPHEADER => array(
-            'Content-Type: application/json'
-          ),
-        ));
-
-        $response = curl_exec($curl);
-
-        curl_close($curl);
  
-        $json_response = json_decode($response, true);
+    function listSales(){
 
-        $order= Orders::find($id);
+        $sales = Sales::get();
+        $vista ="listsales";
 
-        $estado="";
-        
-        if($json_response["status"]["status"]=='APPROVED'){
-            $estado='PAYED';
-        }
-        $order->status = $estado;
-        $order->save();
-    
-        $status = $estado;
-        $reason = $json_response["status"]["reason"];
-        $message= $json_response["status"]["message"];
-        $fecha  = $json_response["status"]["date"];
-        $valor  = $json_response["request"]["payment"]["amount"]["total"];
+        return view('home.index', compact('sales','vista'));
+    }
 
-        return view("orders.status_session")->with("status",$status)
-                                            ->with("reason",$reason)
-                                            ->with("message",$message)
-                                            ->with("fecha",$fecha)
-                                            ->with("valor",$valor)
-                                            ->with("order_id",$id);
+    function pdf($id){
+
+        $factura = Sales::find($id);
+        //$factura_detalle = SalesDetails::where("fac_id",$factura->id)->get();
+        $factura_detalle = SalesDetails::join('productos as p', 'p.id', '=', 'producto_id')->get();
+
+        $view =  \View::make('sales.pdf', compact('factura','factura_detalle'))
+                                ->render();
+
+        $pdf = \App::make('dompdf.wrapper');
+        $pdf->loadHTML($view);
+        return $pdf->stream("sales.pdf");
 
     }
 

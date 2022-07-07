@@ -55,7 +55,7 @@
                             <a href="sales"><i class="bi bi-cart-plus-fill"></i> Nueva</a>
                         </li>
                         <li>
-                            <a href="sales/list"><i class="bi bi-calendar2-range"></i> Listar</a>
+                            <a href="salelist"><i class="bi bi-calendar2-range"></i> Listar</a>
                         </li>
                     </ul>
                 </li>
@@ -87,7 +87,10 @@
                 <?php } ?>
                 <?php if($vista=='products'){ ?>
                     @include('products.index')
-               |<?php } ?>
+               <?php } ?>
+               <?php if($vista=='salelist'){ ?>
+                    @include('sales.list')
+               <?php } ?>
             </div>
     </div>
 
@@ -149,6 +152,7 @@
                         const precio           = ui.item.precio;
                         const valor_formateado = ui.item.valor_formateado;
                         const anulado          = ui.item.anulado;
+                        const stock            = ui.item.stock;
 
                         $("#id_articulos").val(id_articulos);
                         $("#articulos").val(nombre);
@@ -157,6 +161,7 @@
                         $("#articulos").val(nombre);
                         $("#valor_formateado").val(valor_formateado);
                         $("#subtotal").val(precio);
+                        $("#stock").val(stock);
                             
                   }
             });
@@ -252,7 +257,7 @@
 
             $("#guardar").click(function(){
             
-                if(confirm("Desea guardar la orden?")){
+                if(confirm("Desea guardar la Factura?")){
                 
                     $("#agregar_item").attr("disabled","disabled");
                     $("#guardar").attr("disabled","disabled");
@@ -263,7 +268,7 @@
                         
                         var jqXHR = $.ajax({
                             type: "POST",
-                            url: "{{ url('orders/store') }}",
+                            url: "{{ url('sales/store') }}",
                             data: datos,
                             success: function(data) {
                                 
@@ -294,7 +299,7 @@
                         Swal.fire({
                           icon: 'error',
                           title: 'Oops...',
-                          text: 'La orden no tiene artículos, favor verificar'
+                          text: 'La factura no tiene productos, favor verificar'
                         })
                 
                         $("#guardar").removeAttr("disabled");
@@ -458,6 +463,19 @@
             }   
         }
 
+        function quitar(id){
+            
+            detalles= $.grep( detalles, function (item,index) { 
+                return item.id !=  id;
+            });
+
+            actualizar_tabla(detalles);
+            $("#nombres").val("");
+            $("#email").val("");
+            $("#celular").val("");
+            $("#codigo_articulo").val("");
+        }
+
         function agregar_item(){
 
             var id_articulos   =$("#id_articulos").val();
@@ -465,26 +483,41 @@
             var subtotal       =$("#subtotal").val();
             var descripcion    =$("#descripcion").val();
             var cantidad       =$("#cantidad").val();
+            var stock          =$("#stock").val();
+            var sw=0;
 
-            detalles.push({ 
-                "id"               : id_articulos,
-                "codigo"           : codigo_articulo,
-                "descripcion"      : descripcion,
-                "cantidad"         : cantidad,
-                "subtotal"         : subtotal,
-                "valor"            : subtotal*cantidad,
-                "valor_formateado" : valor_formateado,
-                "anulado"          : "NO"
-            });
-            
-            console.log(JSON.stringify(detalles));
-            $("#detalles").val(JSON.stringify(detalles));
+            if(stock==0){
+                
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Oops...',
+                  text: 'No tiene existencias para el producto: '+descripcion
+                })
+                sw=1;
+            }
 
-            actualizar_tabla(detalles);
+            if(sw==0){
 
-            $("#id_articulos").val("");
-            $("#articulos").val("");
-            $("#cantidad").val("");
+                detalles.push({ 
+                    "id"               : id_articulos,
+                    "codigo"           : codigo_articulo,
+                    "descripcion"      : descripcion,
+                    "cantidad"         : cantidad,
+                    "subtotal"         : subtotal,
+                    "valor"            : subtotal*cantidad,
+                    "valor_formateado" : valor_formateado,
+                    "anulado"          : "NO"
+                });
+                
+                console.log(JSON.stringify(detalles));
+                $("#detalles").val(JSON.stringify(detalles));
+
+                actualizar_tabla(detalles);
+
+                $("#id_articulos").val("");
+                $("#articulos").val("");
+                $("#cantidad").val("");
+            }
 
         }
 

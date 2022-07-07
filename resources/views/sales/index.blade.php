@@ -20,6 +20,7 @@
       <div class="form-group col-md-6">
         <label>Productos</label>
         <input type="hidden" class="form-control" id="id_articulos" name="id_articulos">
+        <input type="hidden" class="form-control" id="stock" name="stock">
         <input type="hidden" class="form-control" id="descripcion" name="descripcion">
         <input type="hidden" class="form-control" id="codigo_articulo" name="codigo_articulo">
         <input type="hidden" class="form-control" id="subtotal" name="subtotal">
