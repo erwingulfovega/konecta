@@ -135,9 +135,12 @@ class SalesController extends Controller
     function pdf($id){
 
         $factura = Sales::find($id);
-        //$factura_detalle = SalesDetails::where("fac_id",$factura->id)->get();
-        $factura_detalle = SalesDetails::join('productos as p', 'p.id', '=', 'producto_id')->get();
-
+        
+        $factura_detalle = DB::table('factura_detalle as fd')
+                          ->join('productos as p', 'p.id', '=', 'fd.producto_id')
+                          ->where("fd.fac_id",$factura->id)
+                          ->get();
+       
         $view =  \View::make('sales.pdf', compact('factura','factura_detalle'))
                                 ->render();
 
