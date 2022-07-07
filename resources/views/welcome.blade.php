@@ -35,9 +35,6 @@
                         <li>
                             <a href="products"><i class="bi bi-cart-plus-fill"></i> Nuevo</a>
                         </li>
-                        <li>
-                            <a href="#"><i class="bi bi-calendar2-range"></i> Listar</a>
-                        </li>
                     </ul>
                 </li>
                 <li>

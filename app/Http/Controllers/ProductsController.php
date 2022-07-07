@@ -147,20 +147,20 @@ class ProductsController extends Controller
     {
       
         $term = strtoupper($request->input("term"));
-        $sql = "SELECT id,nombre,referencia,cantidad,precio,stock from productos
-        where (id like '%$term%' or codigo like upper('%$term%') or referencia like upper('%term%')) limit 5";
+        $sql = "SELECT id,nombre,referencia,precio,stock,fecha_creacion from productos
+        where (id like '%$term%' or nombre like upper('%$term%') or referencia like upper('%term%')) limit 5";
         $productos = DB::Select($sql);
         $response = array();
 
         foreach($productos as $filas){
                
             $response[] = array("id"               => $filas->id,
-                                "codigo"           => $filas->codigo,
-                                "label"            => $filas->codigo." ".utf8_encode($filas->descripcion),
-                                "value"            => $filas->descripcion,
-                                "descripcion"      => $filas->descripcion,
-                                "valor_formateado" => number_format($filas->valor,0,'','.'),
-                                "valor"            => $filas->valor,
+                                "codigo"           => $filas->id,
+                                "label"            => $filas->nombre,
+                                "value"            => $filas->nombre,
+                                "nombre"           => $filas->nombre,
+                                "valor_formateado" => number_format($filas->precio,0,'','.'),
+                                "precio"           => $filas->precio,
                                 "anulado"          => 'NO'
                                );
         }

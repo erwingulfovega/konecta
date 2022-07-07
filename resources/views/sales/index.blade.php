@@ -1,4 +1,4 @@
-<h5>Nueva Orden</h5>
+<h5>Nueva Venta</h5>
 <form id="form_order" name="form_order">
     {{ method_field('POST') }}
     {{ csrf_field() }}
@@ -18,9 +18,9 @@
         <input type="email" class="form-control" id="celular" name="celular">
       </div>
       <div class="form-group col-md-6">
-        <label>Artículos</label>
+        <label>Productos</label>
         <input type="hidden" class="form-control" id="id_articulos" name="id_articulos">
-        <input type="hidden" class="form-control" id="descripcion" name="description">
+        <input type="hidden" class="form-control" id="descripcion" name="descripcion">
         <input type="hidden" class="form-control" id="codigo_articulo" name="codigo_articulo">
         <input type="hidden" class="form-control" id="subtotal" name="subtotal">
         <input type="hidden" class="form-control" id="valor_formateado" name="valor_formateado">
@@ -36,7 +36,7 @@
           Agregar item
         </button>
     </div>
-    <h5>Artículos en la Orden</h5>
+    <h5>Productos en la Factura</h5>
         <div class="form-group">
           <input type="hidden" id="detalles" name="detalles" style="display:none;">
           <table class="table table-striped table-bordered" style="width:100%" id="orden_detalles">
@@ -63,7 +63,7 @@
   </form>
     <div class="form-group">
     <button type="button" class="btn btn-success" id="guardar" name="guardar"><i class="bi bi-cart-check-fill"></i>
-    Guardar Orden</button>
+    Guardar Factura</button>
   </div>
   
   <div id="mensaje"></div>
@@ -72,7 +72,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLongTitle">Detalle de la Orden</h5>
+        <h5 class="modal-title" id="exampleModalLongTitle">Detalle de la Factura</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>

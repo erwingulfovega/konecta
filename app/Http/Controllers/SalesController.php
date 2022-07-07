@@ -11,11 +11,11 @@ use DB;
 use Carbon\Carbon;
 
 
-class OrdersController extends Controller
+class SalesController extends Controller
 {
     
     public function index(Request $request){
-        $vista="orders";
+        $vista="sales";
         return view('home.index')->with("vista",$vista);  
     }
 

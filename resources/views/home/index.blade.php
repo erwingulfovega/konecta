@@ -38,9 +38,6 @@
                         <li>
                             <a href="products"><i class="bi bi-cart-plus-fill"></i> Nuevo</a>
                         </li>
-                        <li>
-                            <a href="#"><i class="bi bi-calendar2-range"></i> Listar</a>
-                        </li>
                     </ul>
                 </li>
                 <li>
@@ -55,10 +52,10 @@
                     <a href="#pageSubmenu3" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Ventas</a>
                     <ul class="collapse list-unstyled" id="pageSubmenu3">
                         <li>
-                            <a href="orders"><i class="bi bi-cart-plus-fill"></i> Nueva</a>
+                            <a href="sales"><i class="bi bi-cart-plus-fill"></i> Nueva</a>
                         </li>
                         <li>
-                            <a href="orders/list"><i class="bi bi-calendar2-range"></i> Listar</a>
+                            <a href="sales/list"><i class="bi bi-calendar2-range"></i> Listar</a>
                         </li>
                     </ul>
                 </li>
@@ -82,8 +79,8 @@
             </nav>
 
             <div id="pintar_vistas"></div>
-                <?php if($vista=='orders'){ ?>
-                    @include('orders.index')
+                <?php if($vista=='sales'){ ?>
+                    @include('sales.index')
                 <?php } ?>
                 <?php if($vista=='categories'){ ?>
                     @include('categories.index')
@@ -136,26 +133,30 @@
             });
 
             $('#example').DataTable();
+            $('#tb_categorias').DataTable();
+            $('#tb_productos').DataTable();
 
             $( "#articulos" ).autocomplete({
-                  source: "{{ url('articles/autocomplete')}}",
+                  source: "{{ url('products/autocomplete')}}",
                   minLength: 0,
                   select: function( event, ui ) {
-                        
+
+                        console.log(ui.item.precio);
+
                         const id_articulos     = ui.item.id;
                         const codigo           = ui.item.codigo;
-                        const descripcion      = ui.item.descripcion;
-                        const valor            = ui.item.valor;
+                        const nombre           = ui.item.nombre;
+                        const precio           = ui.item.precio;
                         const valor_formateado = ui.item.valor_formateado;
                         const anulado          = ui.item.anulado;
 
                         $("#id_articulos").val(id_articulos);
-                        $("#articulos").val(descripcion);
-                        $("#descripcion").val(descripcion);
+                        $("#articulos").val(nombre);
+                        $("#descripcion").val(nombre);
                         $("#codigo_articulo").val(codigo);
-                        $("#articulos").val(descripcion);
+                        $("#articulos").val(nombre);
                         $("#valor_formateado").val(valor_formateado);
-                        $("#subtotal").val(valor);
+                        $("#subtotal").val(precio);
                             
                   }
             });

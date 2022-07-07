@@ -19,7 +19,7 @@
 	?>
 
 	<h4>Listado de Productos Activos</h4>
-	<table id="tb_categorias" class="table table-striped table-bordered" style="width:100%">
+	<table id="tb_productos" class="table table-striped table-bordered" style="width:100%">
     <thead>
         <tr>
           <th>Id</th>

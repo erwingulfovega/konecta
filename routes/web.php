@@ -28,15 +28,11 @@ Route::get('products', function () {
     return view('home.index')->with("vista",$vista);
 });
 
-
-Route::get('orders/mensaje', 'App\Http\Controllers\OrdersController@mensaje');
-Route::get('orders/', 'App\Http\Controllers\OrdersController@index');
-Route::match(['get', 'post'], 'orders/store','App\Http\Controllers\OrdersController@store');
-Route::get('orders/show/{id}','App\Http\Controllers\OrdersController@show');
-Route::match(['get', 'post'], 'orders/thankey/{id}','App\Http\Controllers\OrdersController@thankey');
-Route::match(['get', 'post'], 'orders/getSession/{id}','App\Http\Controllers\OrdersController@getSession');
-Route::match(['get', 'post'],'orders/list','App\Http\Controllers\OrdersController@listOrders');
-
+Route::get('sales/mensaje', 'App\Http\Controllers\SalesController@mensaje');
+Route::get('sales/', 'App\Http\Controllers\SalesController@index');
+Route::match(['get', 'post'], 'sales/store','App\Http\Controllers\SalesController@store');
+Route::get('sales/show/{id}','App\Http\Controllers\SalesController@show');
+Route::match(['get', 'post'],'sales/list','App\Http\Controllers\SalesController@listOrders');
 
 Route::match(['get', 'post'], 'categories/store','App\Http\Controllers\CategoriesController@store');
 Route::match(['get', 'post'], 'categories/update','App\Http\Controllers\CategoriesController@update');
